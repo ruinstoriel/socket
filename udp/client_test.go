@@ -1,4 +1,4 @@
-package tcpdemo
+package tcp_package
 
 import "testing"
 

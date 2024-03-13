@@ -1,4 +1,4 @@
-package tcpdemo
+package tcp_package
 
 import (
 	"crypto/tls"
@@ -23,9 +23,9 @@ func tcpClient(addr string) {
 		if i > 0 {
 			fmt.Printf("client 收到:%s", string(r))
 		}
-
 	}
 }
+
 func UdpClient(addr string) {
 	con, _ := net.Dial("udp", addr)
 
