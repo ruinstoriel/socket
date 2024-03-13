@@ -7,14 +7,20 @@ import (
 
 func tcpServer(addr string) {
 	listener, _ := net.Listen("tcp", addr)
-	defer listener.Close()
-	for {
-		conn, _ := listener.Accept()
-		go handle(conn)
-	}
+	go accpet(listener)
+
 }
 
-func handle(con net.Conn) {
+func accpet(li net.Listener) {
+	defer li.Close()
+	for {
+		conn, _ := li.Accept()
+		go handleConnection(conn)
+	}
+
+}
+
+func handleConnection(con net.Conn) {
 	defer con.Close()
 	// 如果没有读完就开始回写，会发生什么?
 	for {
