@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"log"
+	"net"
 	"os"
-	"strings"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -14,18 +14,18 @@ import (
 func TestTlspServer(t *testing.T) {
 	addr := "localhost:8080"
 	TlsServer(addr)
-	con, err := tls.Dial("tcp", addr, clientConfig())
+	con, err := net.Dial("tcp", addr)
+	con = tls.Client(con, clientConfig())
 	if err != nil {
 		t.Fatal(err)
 	}
-	con.Handshake()
 	defer con.Close()
-	b := []byte("你好啊")
+	b := []byte("你好啊sdfsdfsdfsdfsdfsdfsdfsdf")
 	con.Write(b)
 	r := make([]byte, 1024)
 
 	i, _ := con.Read(r)
-	assert.Equal(t, strings.TrimSpace(string(r[:i])), "已阅", "错误")
+	assert.Equal(t, string(r[:i]), "已阅", "错误")
 }
 
 func clientConfig() *tls.Config {
