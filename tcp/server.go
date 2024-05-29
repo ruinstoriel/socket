@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-func tcpServer(addr string) {
+func TcpServer(addr string) {
 	listener, _ := net.Listen("tcp", addr)
 	go accpet(listener)
 
@@ -33,7 +33,7 @@ func handleConnection(con net.Conn) {
 			fmt.Printf("读取了%d, 内容是%s \n", r, string(b))
 		}
 
-		w, _ := con.Write([]byte("已阅"))
+		w, _ := con.Write([]byte("bbbb\nbbbb"))
 		if w > 0 {
 			fmt.Printf("发送了%d \n", w)
 		}

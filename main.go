@@ -1,18 +1,11 @@
 package main
 
 import (
-	S "socket/tcp_demo"
+	S "socket/tcp"
+	"time"
 )
 
 func main() {
-	go udpServer()
-	udpClient()
-
-}
-
-func udpServer() {
-	S.UdpTlsServer("127.0.0.1:8080")
-}
-func udpClient() {
-	S.UdpTlsClient("127.0.0.1:8080")
+	S.TcpServer("localhost:8080")
+	time.Sleep(120 * time.Second)
 }

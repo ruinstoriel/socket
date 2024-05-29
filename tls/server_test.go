@@ -19,6 +19,7 @@ func TestTlspServer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer con.Close()
 	b := []byte("你好啊sdfsdfsdfsdfsdfsdfsdfsdf")
 	con.Write(b)

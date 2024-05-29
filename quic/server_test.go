@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/magiconair/properties/assert"
-	"github.com/quic-go/quic-go"
+	"github.com/metacubex/quic-go"
 )
 
 func TestQuicServer(t *testing.T) {
@@ -25,7 +25,7 @@ func TestQuicServer(t *testing.T) {
 		panic(err)
 	}
 	defer cancel()
-	
+
 	b := []byte("你好啊？？？？？")
 	str, err := con.OpenStream()
 	if nerr, ok := err.(net.Error); ok && nerr.Timeout() {

@@ -1,4 +1,4 @@
-package quic_demo
+package singquic
 
 import (
 	"context"
@@ -9,7 +9,8 @@ import (
 	"github.com/metacubex/quic-go"
 )
 
-func quicServer(addr string) {
+func singQuicServer(addr string) {
+
 	udpAddr, _ := net.ResolveUDPAddr("udp4", addr)
 	udpConn, err := net.ListenUDP("udp4", udpAddr)
 	if err != nil {

@@ -9,8 +9,8 @@ import (
 )
 
 func TestTcpServer(t *testing.T) {
-	addr := "localhost:8080"
-	tcpServer(addr)
+	addr := ":8080"
+	TcpServer(addr)
 	con, err := net.Dial("tcp", addr)
 	if err != nil {
 		t.Fatal(err)
