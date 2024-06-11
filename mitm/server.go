@@ -129,27 +129,7 @@ func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				}
 				return
 			}
-			tlsReq.RemoteAddr = req.RemoteAddr
-			fmt.Println("RemoteAddr---------------" + tlsReq.URL.Host)
-			tlsReq.URL.Scheme = "https"
-			tlsReq.URL.Host = tlsReq.Host
-			fmt.Println("Host---------------" + tlsReq.URL.Host)
-			// ipv6可能导致错误，非标准端口可能导致错误
-			targetAddr := net.JoinHostPort(req.URL.Host, req.URL.Port())
-			fmt.Println(targetAddr)
-			fmt.Println("targetAddr---------------" + targetAddr)
 
-			newReq := new(http.Request)
-			*newReq = *tlsReq
-			newHeader := http.Header{}
-			CloneHeader(newReq.Header, newHeader)
-			newReq.Header = newHeader
-			fmt.Println(newReq.Header)
-			for _, item := range hopHeaders {
-				if newReq.Header.Get(item) != "" {
-					newReq.Header.Del(item)
-				}
-			}
 			tr := &http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
@@ -160,15 +140,14 @@ func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				TLSHandshakeTimeout:   5 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
 			}
-			fmt.Println(newReq.Header)
-			resp, err := tr.RoundTrip(newReq)
+			resp, err := tr.RoundTrip(tlsReq)
 			if err == nil {
 				for _, h := range hopHeaders {
 					resp.Header.Del(h)
 				}
 			}
 			if err != nil {
-				fmt.Errorf("%s - HTTPS解密, 请求错误: %s", newReq.URL, err)
+				fmt.Errorf("%s - HTTPS解密, 请求错误: %s", tlsReq.URL, err)
 				_, _ = tlsClientConn.Write(badGateway)
 				return
 			}
