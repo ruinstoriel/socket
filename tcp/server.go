@@ -30,7 +30,7 @@ func handleConnection(con net.Conn) {
 			panic(err)
 		}
 		if r > 0 {
-			fmt.Printf("读取了%d, 内容是%s \n", r, string(b))
+			fmt.Printf("读取了%d, 内容是%s \n", r, string(b[:r]))
 		}
 
 		w, _ := con.Write([]byte("bbbb\nbbbb"))

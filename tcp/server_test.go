@@ -1,7 +1,9 @@
 package tcp_package
 
 import (
+	"io/ioutil"
 	"net"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -22,5 +24,17 @@ func TestTcpServer(t *testing.T) {
 
 	con.Read(r)
 	assert.Equal(t, strings.TrimSpace(string(r[:6])), "已阅", "错误")
+}
 
+func TestTcpServerHttp(t *testing.T) {
+	addr := ":8080"
+	TcpServer(addr)
+	resp, err := http.Get("http://127.0.0.1" + addr)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	assert.Equal(t, string(body), "已阅", "错误")
 }
