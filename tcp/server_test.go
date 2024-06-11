@@ -1,4 +1,4 @@
-package tcp_package
+package main
 
 import (
 	"io/ioutil"
@@ -11,8 +11,8 @@ import (
 )
 
 func TestTcpServer(t *testing.T) {
-	addr := ":8080"
-	TcpServer(addr)
+	addr := "1.2.3.4:4433"
+	//TcpServer(addr)
 	con, err := net.Dial("tcp", addr)
 	if err != nil {
 		t.Fatal(err)

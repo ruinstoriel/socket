@@ -1,14 +1,17 @@
-package tcp_package
+package main
 
 import (
 	"fmt"
 	"net"
 )
 
+func main() {
+	TcpServer(":8443")
+}
+
 func TcpServer(addr string) {
 	listener, _ := net.Listen("tcp", addr)
-	go accpet(listener)
-
+	accpet(listener)
 }
 
 func accpet(li net.Listener) {
