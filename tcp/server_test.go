@@ -11,7 +11,7 @@ import (
 )
 
 func TestTcpServer(t *testing.T) {
-	addr := "1.2.3.4:4433"
+	addr := "127.0.0.1:8080"
 	//TcpServer(addr)
 	con, err := net.Dial("tcp", addr)
 	if err != nil {
