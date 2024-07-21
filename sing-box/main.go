@@ -26,7 +26,6 @@ func main() {
 func http2Direct() {
 	lf := logFactory()
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	ctx = service.ContextWithDefaultRegistry(ctx)
 	ctx = pause.WithDefaultManager(ctx)
 	router := routeCreate(ctx, lf)
@@ -40,7 +39,15 @@ func http2Direct() {
 		common.Must(oErr)
 		return out
 	})
-	wait()
+	end := make(chan bool, 1)
+	go func() {
+		select {
+		case <-ctx.Done():
+			in.Close()
+			end <- true
+		}
+	}()
+	wait(cancel, end)
 }
 
 func httpInbound(ctx context.Context, router adapter.Router) *inbound.HTTP {
@@ -112,22 +119,18 @@ func routeCreate(ctx context.Context, lf log.Factory) *route2.Router {
 	}
 	return router
 }
-func wait() {
-	exitChan := make(chan struct{})
+func wait(cancel func(), end chan bool) {
 
-	// 捕捉系统信号
-	go func() {
-		sigs := make(chan os.Signal, 1)
-		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, syscall.SIGHUP)
 
-		<-sigs
-		fmt.Println("收到退出信号")
-		close(exitChan)
-	}()
+	defer signal.Stop(sigs)
+	<-sigs
+	fmt.Println("收到退出信号")
+	cancel()
+	<-end
+	fmt.Println("清理结束")
 
-	// 阻塞主线程直到收到退出信号
-	<-exitChan
-	fmt.Println("程序退出")
 }
 func vlessInbound(router adapter.Router) *inbound.VLESS {
 
