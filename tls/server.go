@@ -31,7 +31,7 @@ func handleConnection(con net.Conn) {
 		b := make([]byte, 1024)
 		r, err := conn.Read(b)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("--------------", err)
 		}
 		if r > 0 {
 			fmt.Printf("读取了%d, 内容是%s \n", r, string(b[:r]))

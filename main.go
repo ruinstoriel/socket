@@ -12,15 +12,27 @@ import (
 	"github.com/sagernet/sing/common"
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/pause"
+	"net"
 	"net/netip"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
 
 func main() {
-	http2Direct()
+	addr := &net.UDPAddr{
+		IP:   net.ParseIP("2409:8a62:164:1bb0:597f:821f:74fe:f4f0"),
+		Port: 60949,
+	}
+	fmt.Println(addr)
+	zoneID, err := strconv.ParseUint(addr.Zone, 10, 32)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(uint32(zoneID))
 }
 
 func http2Direct() {
