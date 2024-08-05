@@ -45,16 +45,15 @@ func main() {
 
 	tr := &http.Transport{
 		Proxy: func(res *http.Request) (*url.URL, error) {
-			return url.Parse("socks5://127.0.0.1:2080")
+			return url.Parse("http://127.0.0.1:8080")
 		},
-		DisableKeepAlives: true,
 	}
 
 	// Create client
 	myClient := &http.Client{
 		Transport: tr,
 	}
-	res, err := myClient.Get("https://wwww.baidu.com")
+	res, err := myClient.Get("https://www.google.com")
 	if err != nil {
 		panic(err)
 	}

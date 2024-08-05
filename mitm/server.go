@@ -36,7 +36,8 @@ type ConnBuffer struct {
 	net.Conn
 	buf *bufio.ReadWriter
 }
-type Proxy struct {
+
+type Mitm struct {
 }
 
 func httpHandle(rw http.ResponseWriter, req *http.Request) {
@@ -83,7 +84,7 @@ func httpHandle(rw http.ResponseWriter, req *http.Request) {
 
 var cache = &CacheImp{}
 
-func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (p Mitm) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	fmt.Println("Method---------------" + req.Method)
 	if req.Method == http.MethodConnect {
 		if hijacker, ok := rw.(http.Hijacker); ok {
@@ -164,8 +165,8 @@ func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func New() Proxy {
-	return Proxy{}
+func New() Killer {
+	return Killer{}
 }
 
 // CloneHeader 深拷贝Header
