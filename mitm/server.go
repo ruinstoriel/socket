@@ -165,8 +165,8 @@ func (p Mitm) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func New() Killer {
-	return Killer{}
+func New() http.Handler {
+	return Proxy{}
 }
 
 // CloneHeader 深拷贝Header

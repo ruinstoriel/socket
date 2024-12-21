@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Printf("connecting to %s \n", u.String())
 	h := http.Header{}
-	hh := base64.StdEncoding.EncodeToString([]byte("www.baidu.com"))
+	hh := base64.StdEncoding.EncodeToString([]byte("183.2.3.7"))
 	h.Add("sec-websocket-protocol", hh)
 	h.Add("token", "85aad405-ec1b-4332-b405-de08b8d53629")
 

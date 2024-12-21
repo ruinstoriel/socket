@@ -53,7 +53,7 @@ func main() {
 	myClient := &http.Client{
 		Transport: tr,
 	}
-	res, err := myClient.Get("https://www.google.com")
+	res, err := myClient.Get("https://www.baidu.com")
 	if err != nil {
 		panic(err)
 	}

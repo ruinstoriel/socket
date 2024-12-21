@@ -37,15 +37,29 @@ func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 			conn.Write(tunnelEstablishedResponseLine)
 			addr := req.URL.Host
-			fmt.Println(addr)
 			domain := strings.Split(addr, ":")[0]
 			fmt.Println(domain)
 			u := url.URL{Scheme: "wss", Host: "socket.weiliangcn.top", Path: "/"}
+			//u := url.URL{Scheme: "ws", Host: "127.0.0.1:8787", Path: "/"}
 
-			fmt.Printf("connecting to %s \n", u.String())
+			//earlyData := make([]byte, 4096)
+			//i, err := conn.Read(earlyData)
+			//fmt.Println("first package: ", i)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Printf("connecting to %s \n", domain)
 			h := http.Header{}
 			hh := base64.StdEncoding.EncodeToString([]byte(domain))
-			h.Add("sec-websocket-protocol", hh)
+			//earlyDataBase := base64.StdEncoding.EncodeToString(earlyData[:i])
+			//h.Add("sec-websocket-protocol", earlyDataBase)
+
+			// 0x01: IPv4 address
+			// 0x03: Domain name
+			// 0x04: IPv6 address
+			h.Add("base", hh)
+			h.Add("atype", "0x03")
 			h.Add("token", "85aad405-ec1b-4332-b405-de08b8d53629")
 
 			c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
@@ -81,7 +95,10 @@ func (p Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				copyErrChan <- copyErr
 			}()
 			err = <-copyErrChan
-			fmt.Println(err)
+			if err != nil {
+				fmt.Println(err)
+			}
+
 		} else {
 			httpHandle(rw, req)
 

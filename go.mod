@@ -3,7 +3,6 @@ module socket
 go 1.21.4
 
 require (
-	github.com/imroc/biu v0.0.0-20170329141542-0376ce6761c0
 	github.com/magiconair/properties v1.8.7
 	github.com/metacubex/quic-go v0.41.1-0.20240307164142-46c6f7cdf2d1
 	github.com/metacubex/sing-quic v0.0.0-20240310154810-47bca850fc01
