@@ -19,13 +19,27 @@ type MyHandler struct {
 func (h MyHandler) NewConnection(ctx context.Context, con net.Conn, metadata M.Metadata) error {
 	defer con.Close()
 	log.Infoln("tcp: %s", metadata.Destination.AddrString())
+	for {
+
+		b := buf.New()
+		l, err := b.ReadFrom(con)
+		if err != nil {
+			log.Errorln("%s", err)
+		}
+		if l > 0 {
+			log.Infoln("tcp读取了%d, 内容是%s \n", b.Len(), string(b.Bytes()[:l]))
+		}
+		httpResponse := "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nContent-Type: text/plain\r\n\r\nHello World"
+		w := buf.New()
+		w.Write([]byte(httpResponse))
+	}
 	return nil
 
 }
 
 func (h MyHandler) NewPacketConnection(ctx context.Context, con network.PacketConn, metadata M.Metadata) error {
 	defer con.Close()
-	log.Infoln("udp: %s", metadata.Destination.AddrString())
+	// log.Infoln("udp: %s", metadata.Destination.AddrString())
 	for {
 
 		b := buf.New()
@@ -42,7 +56,7 @@ func (h MyHandler) NewPacketConnection(ctx context.Context, con network.PacketCo
 		w.Write([]byte(httpResponse))
 		err = con.WritePacket(w, addr)
 		if err == nil {
-			log.Infoln("发送了%d \n", w.Len())
+			// log.Infoln("发送了%d \n", w.Len())
 		}
 
 	}

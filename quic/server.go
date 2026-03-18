@@ -4,11 +4,14 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/metacubex/quic-go"
-	"github.com/metacubex/quic-go/http3"
+	"github.com/ruinstoriel/quic-go"
+	"github.com/ruinstoriel/quic-go/http3"
+	"github.com/ruinstoriel/quic-go/quicvarint"
 	"io"
+	"log"
 	"net"
 	"net/http"
+	"strconv"
 )
 
 const (
@@ -75,9 +78,17 @@ func quicServer_(addr string) {
 	l, err := quic.Listen(udpConn, config(), &quic.Config{MaxIncomingStreams: 100})
 	s := http3.Server{
 		Handler: &MyHandler{},
-		StreamHijacker: func(frameType http3.FrameType, connection quic.Connection, stream quic.Stream, err2 error) (hijacked bool, err error) {
+		StreamDispatcher: func(frameType http3.FrameType, stream *quic.Stream, err2 error) (hijacked bool, err error) {
 			fmt.Println(frameType == FrameTypeTCPRequest)
+			// 消耗掉
+			bReader := quicvarint.NewReader(stream)
+			_, err = quicvarint.Read(bReader)
+			if err != nil {
+				return false, err
+			}
+			
 			go handleStream(stream)
+			fmt.Println("---------------------------")
 			return true, nil
 		},
 	}
@@ -94,12 +105,13 @@ func config() *tls.Config {
 	}
 
 	config := &tls.Config{
+
 		Certificates: []tls.Certificate{cer},
 		MinVersion:   tls.VersionTLS13, // 指定最低版本为TLS 1.2
 	}
 	return config
 }
-func quicHandle(con quic.Connection) {
+func quicHandle(con *quic.Conn) {
 
 	for {
 		s, err := con.AcceptStream(context.Background())
@@ -111,20 +123,46 @@ func quicHandle(con quic.Connection) {
 
 }
 
-func handleStream(s quic.Stream) {
-
-	b := make([]byte, 1024)
-	i, err := s.Read(b)
+func handleStream(s *quic.Stream) {
+	reqAddr, err := ReadTCPRequest(s)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("内容是%s \n", string(b[:i]))
-	w, _ := s.Write([]byte("已阅"))
-	if w > 0 {
-		fmt.Printf("发送了%d \n", w)
-	}
-	//s.CancelRead(0)
-	err = s.Close()
-	_, err = io.Copy(io.Discard, s)
+	fmt.Println("<UNK>", reqAddr)
+}
 
+func ReadTCPRequest(r io.Reader) (string, error) {
+	bReader := quicvarint.NewReader(r)
+	addrLen, err := quicvarint.Read(bReader)
+	if err != nil {
+		return "", err
+	}
+	log.Printf("addrLen: %s", strconv.Itoa(int(addrLen)))
+	if addrLen == 0 || addrLen > MaxAddressLength {
+
+	}
+
+	addrBuf := make([]byte, addrLen)
+	_, err = io.ReadFull(r, addrBuf)
+
+	if err != nil {
+
+		return "", err
+	}
+	paddingLen, err := quicvarint.Read(bReader)
+	if err != nil {
+
+		return "", err
+	}
+	if paddingLen > MaxPaddingLength {
+
+	}
+	if paddingLen > 0 {
+		_, err = io.CopyN(io.Discard, r, int64(paddingLen))
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return string(addrBuf), nil
 }

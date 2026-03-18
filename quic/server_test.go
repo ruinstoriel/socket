@@ -5,14 +5,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/ruinstoriel/quic-go"
+	"github.com/ruinstoriel/quic-go/quicvarint"
 	"io"
 	"log"
-	"net"
 	"os"
+	"strconv"
 	"testing"
 	"time"
-
-	"github.com/metacubex/quic-go"
 )
 
 func TestQuicServer(t *testing.T) {
@@ -26,43 +26,61 @@ func TestQuicServer(t *testing.T) {
 	}
 	defer cancel()
 	count := 0
-	for i := 0; i < 101; i++ {
+	for i := 0; i < 1; i++ {
 		count++
-		fmt.Print(count)
-		b := make([]byte, 100)
+		fmt.Printf("第 %d 个连接 \n", count)
 
-		j := varintPut(b, FrameTypeTCPRequest)
-		copy(b[j:], "are you ok")
 		str, err2 := con.OpenStream()
+		// err2 = WriteTCPRequest(str, "www.baidu.com")
+		err2 = plaintextTransmission(str)
 		if err2 != nil {
 			panic(err2)
 		}
-		if nerr, ok := err2.(net.Error); ok && nerr.Timeout() {
-			panic(nerr)
-		}
-		_, err3 := str.Write(b)
-		if err3 != nil {
-			log.Fatalf(err3.Error())
-		}
+
 		r := make([]byte, 100)
 
-		ss, err5 := str.Read(r)
-		fmt.Println(string(r[:ss]))
+		_, err5 := str.Read(r)
+		//fmt.Println(string(r[:ss]))
 
-		if err5 != io.EOF {
-			//panic(err5)
-			// io.Copy(io.Discard, str)
-			//str.CancelRead(0)
+		if err5 != nil {
+			// panic(err5)
 		}
-		//str.CancelRead(0)
-		_ = str.Close()
-		_, err4 := io.Copy(io.Discard, str)
-		if err4 != nil {
-			panic(err5)
-		}
+
+		fmt.Printf("client %d CancelRead() \n", str.StreamID())
+		str.CancelRead(0)
+		time.Sleep(10 * time.Millisecond)
+		err = str.Close()
+		fmt.Printf("client %v  \n", err)
 
 	}
 
+}
+
+func plaintextTransmission(s *quic.Stream) error {
+	buf := make([]byte, 1024)
+	addrLen := 11
+	i := varintPut(buf, FrameTypeTCPRequest)
+	fmt.Println("addrLen: ", addrLen)
+	fmt.Printf("i: %d\n", i)
+	varintPut(buf[i:], uint64(addrLen))
+	s.Write(buf)
+	return nil
+}
+
+func WriteTCPRequest(w io.Writer, addr string) error {
+
+	addrLen := len(addr)
+	log.Printf("addrLen: %s", strconv.Itoa(addrLen))
+	sz := int(quicvarint.Len(FrameTypeTCPRequest)) +
+		int(quicvarint.Len(uint64(addrLen))) + addrLen
+	buf := make([]byte, sz)
+	i := varintPut(buf, FrameTypeTCPRequest)
+
+	i += varintPut(buf[i:], uint64(addrLen))
+
+	i += copy(buf[i:], addr)
+	_, err := w.Write(buf)
+	return err
 }
 
 func varintPut(b []byte, i uint64) int {
@@ -105,10 +123,10 @@ func clientConfig() *tls.Config {
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 	conf := &tls.Config{
-		// InsecureSkipVerify: true,
-		ServerName: "127.0.0.1",
-		MinVersion: tls.VersionTLS13, // 指定最低版本为TLS 1.2
-		RootCAs:    caCertPool,
+		InsecureSkipVerify: true,
+		ServerName:         "127.0.0.1",
+		MinVersion:         tls.VersionTLS13, // 指定最低版本为TLS 1.2
+		RootCAs:            caCertPool,
 	}
 	return conf
 }

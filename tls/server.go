@@ -51,8 +51,10 @@ func config() *tls.Config {
 	}
 
 	config := &tls.Config{
-		Certificates: []tls.Certificate{cer},
-		MinVersion:   tls.VersionTLS13, // 指定最低版本为TLS 1.2
+		Certificates:       []tls.Certificate{cer},
+		MinVersion:         tls.VersionTLS13, // 指定最低版本为TLS 1.2
+		InsecureSkipVerify: false,
+		ServerName:         "127.0.0.1",
 	}
 	return config
 }
